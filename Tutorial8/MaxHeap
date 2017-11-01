@@ -1,0 +1,182 @@
+//Norwegian language
+
+public class MaksHaug <T>{
+
+private class Innslag {
+		int prioritet;
+		T verdi;
+		
+		public Innslag(int prioritet, T verdi) {
+			this.prioritet = prioritet;
+			this.verdi = verdi;
+		}
+	}
+
+	private ArrayList<Innslag> innslagene = new ArrayList<>();
+
+		//Dummy-element
+	public MaksHaug() {
+		innslagene.add(null);
+	}
+	
+	/*
+	 * Kjøretid O(n). Det kan i utgangspunktet se ut som den har n*log(n) kjøretid,
+	 * men antall noder den bytter om er aldri høyere enn n.
+	 */
+	public MaksHaug(ArrayList<Integer> prioriteter, ArrayList<? extends T> startliste) {
+		innslagene.add(null);
+		
+		for (int i=0; i < startliste.size(); i++) {
+			innslagene.add(new Innslag(prioriteter.get(i), startliste.get(i)));
+		}
+		
+		for (int i = innslagene.size()/2; i>0; i--) {
+			bobleOpp(i);
+		}
+	}
+	
+	/*
+	 * Kjøretid: O(1)
+	 */
+	public T findMax() {
+		if (innslagene.size() < 2) return null;
+		return innslagene.get(1).verdi;
+	}
+
+	/*
+	 * Kjøretid: O(log(n)) fra bobleOpp
+	 */
+	public void insert(int prioritet, T objekt) {
+		Innslag i = new Innslag(prioritet, objekt);
+		innslagene.add(i);
+		bobleOpp(innslagene.size() -  1);
+	}
+	
+	/*
+	 * Kjøretid: O(log(n))
+	 */
+	private void bobleOpp(int index) {
+		if (index == 1) return;
+		int forelder = index/2;
+		while (index > 1 && (innslagene.get(forelder).prioritet < innslagene.get(index).prioritet)) {
+			bytt(forelder, index);
+			index = forelder;
+			forelder = index/2;
+		}
+	}
+	
+	/*
+	 * Kjøretid O(1)
+	 */
+	private void bytt(int index1, int index2) {
+		Innslag temp = innslagene.get(index1);
+		innslagene.set(index1, innslagene.get(index2));
+		innslagene.set(index2, temp);
+		
+	}
+	
+	/*
+	 * Kjøretid: O(log(n)) fra bobleNed
+	 */
+	public T removeMax() {
+		Innslag resultat = innslagene.get(1);
+		if (innslagene.size() > 2) {
+			innslagene.set(1, innslagene.remove(innslagene.size() - 1));
+			bobleNed(1);
+		} else {
+			innslagene.remove(1);
+		}
+		return resultat.verdi;
+	}
+	
+	/*
+	 * Kjøretid: O(1)
+	 */
+	private int finnPrioritet(int index) {
+		if (index < innslagene.size()) return innslagene.get(index).prioritet;
+		return Integer.MIN_VALUE;
+	}
+	
+	/*
+	 * Kjøretid: O(log(n)) siden den går nedover i treet potensielt helt ned til bladnodene
+	 */
+	private void bobleNed(int index) {
+		int venstrebarn = index*2;
+		int hoyrebarn = venstrebarn + 1;
+		
+		int venstrePrioritet = finnPrioritet(venstrebarn);
+		int hoyrePrioritet = finnPrioritet(hoyrebarn);
+		int maxPrioritet = innslagene.get(index).prioritet;
+		
+		while ((maxPrioritet < venstrePrioritet || maxPrioritet < hoyrePrioritet)) {
+			if (venstrePrioritet > hoyrePrioritet) {
+				bytt(index, venstrebarn);
+				index = venstrebarn;
+			} else {
+				bytt(index, hoyrebarn);
+				index = hoyrebarn;
+			}
+			venstrebarn = index*2;
+			hoyrebarn = venstrebarn + 1;
+			venstrePrioritet = finnPrioritet(venstrebarn);
+			hoyrePrioritet = finnPrioritet(hoyrebarn);
+			maxPrioritet = innslagene.get(index).prioritet;
+		}
+	}
+	
+	/*
+	 * Kjøretid: O(log(n)) fra bobleOpp
+	 */
+	public void decreaseKey(int index, int prioritet) {
+		Innslag i = innslagene.get(index);
+		if (prioritet > i.prioritet) throw new IllegalArgumentException("Prøver å øke i stedet for å senke nøkkel!");
+		i.prioritet = prioritet;
+		bobleOpp(index);
+	}
+	
+	/*
+	 * Hjelpemetode for debugging og testing
+	 */
+	public String toString() {
+		StringBuilder resultat = new StringBuilder();
+		resultat.append("Maksimum Haug: \n");
+		Innslag innslaget;
+		for (int i=1; i<innslagene.size(); i++) {
+			innslaget = innslagene.get(i);
+			resultat.append(i + ": " + innslaget.prioritet + " - " + innslaget.verdi + "\n");
+		}
+		return resultat.toString();
+	}
+	
+	public int size() {
+		return innslagene.size() -1;
+	}
+	
+	public boolean isEmpty() {
+		if (innslagene.size() < 2) return true;
+		return false;
+	}
+	
+	public static void main(String[] args) {
+		MaksHaug<String> testhaug = new MaksHaug<>();
+		testhaug.insert(14, "Fjorten");
+		testhaug.insert(8, "Åtte");
+		testhaug.insert(2, "To");
+		testhaug.insert(7, "Sju");
+		testhaug.insert(9, "Ni");
+		testhaug.insert(3, "Tre");
+		testhaug.insert(4, "Fire");
+		testhaug.insert(1, "En");
+		testhaug.insert(10, "Ti");
+		System.out.println(testhaug);
+		testhaug.insert(16, "Seksten");
+		System.out.println("Etter innsetting av 16:");
+		System.out.println(testhaug);
+		System.out.println("Max-verdi: " + testhaug.findMax());
+		System.out.println();
+		testhaug.removeMax();
+		System.out.println("Etter removeMax:");
+		System.out.println(testhaug);
+	}
+	
+}
