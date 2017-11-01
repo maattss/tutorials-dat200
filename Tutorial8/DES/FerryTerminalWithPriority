@@ -1,0 +1,155 @@
+public class FergeleieMedPrioritet {
+
+	public static enum Kjoretoytype {BIL, BOBIL, BUSS, LASTEBIL};
+	public static enum Hendelsestype {KJORETOY_KOMMER, FERJE_KOMMER}
+	
+	public static final double SJANSE_BIL = 0.8;
+	public static final double SJANSE_BOBIL = 0.9;
+	public static final double SJANSE_BUSS = 0.95;
+	//public static final double SJANSE_LASTEBIL = 1.00;
+	
+	public static final int TID_MELLOM_FERJER = 1800; // 1800 sek == 30 min
+	public static final int TID_MELLOM_KJORETOY = 30;	// 30 sek == 1/2 min
+	
+	public static final int KAPASITET_FERJE = 80;	// Liten: 40, Middels: 80, Stor: 200
+	
+	public class Kjoretoy {
+		String type;
+		int storrelse;
+		
+		public Kjoretoy(String type, int storrelse) {
+			this.type = type;
+			this. storrelse = storrelse;
+		}
+		
+		@Override
+		public String toString() {
+			return type;
+		}
+		
+		public void skrivUtTilkonsoll() {
+			System.out.printf("%-9s Størrelse: %d", type, storrelse);
+		}
+	}
+	
+	public class Hendelse {
+		int tidspunkt;
+		Hendelsestype hendelsetype;
+		
+		public Hendelse(int tidspunkt, Hendelsestype hendelsetype) {
+			this.tidspunkt = tidspunkt;
+			this.hendelsetype = hendelsetype;
+		}
+	}
+	
+	MinHaug<Hendelse> hendelseskoe;	//Prioritetskø av hendelser
+	MinHaug<Kjoretoy> kjoretoykoe; 	//Prioritetskø av kjoretoy
+	
+	int nvKoe; 	//Antall plasser brukt på fergeleiet
+	int maksKoe;		//Maksimal kø på parkeringsplass
+	
+	/*
+	 * Initialiserer simuleringen
+	 */
+	public FergeleieMedPrioritet() {
+		hendelseskoe = new MinHaug<>();
+		kjoretoykoe = new MinHaug<>();
+		
+		Hendelse hendelse1 = new Hendelse(0, Hendelsestype.KJORETOY_KOMMER);
+		hendelseskoe.insert(0, hendelse1);
+		hendelse1 = new Hendelse(TID_MELLOM_FERJER, Hendelsestype.FERJE_KOMMER);
+		hendelseskoe.insert(TID_MELLOM_FERJER, hendelse1);
+	
+		
+	}
+	
+	public void behandleNesteHendelse() {
+		int nvTid = 0;
+		Hendelse nvHendelse = hendelseskoe.removeMin();
+		nvTid = nvHendelse.tidspunkt;
+		if (nvHendelse.hendelsetype == Hendelsestype.FERJE_KOMMER) {
+			haandterFerjeKommer(nvTid);
+		}
+		if (nvHendelse.hendelsetype == Hendelsestype.KJORETOY_KOMMER) {
+			haandterKjoretoyKommer(nvTid);
+		}
+	}
+	
+	private void haandterKjoretoyKommer(int nvTid) {
+		double terning = Math.random();
+		Kjoretoy kjoretoyet;
+		if(terning < SJANSE_BIL) {									//BIL
+			kjoretoyet = new Kjoretoy("Bil", 1);
+			kjoretoykoe.insert(2, kjoretoyet);
+			nvKoe++;
+		} else if (SJANSE_BIL <= terning && terning < SJANSE_BOBIL) { //BOBIL
+			kjoretoyet = new Kjoretoy("Bobil", 2);
+			kjoretoykoe.insert(3, kjoretoyet);
+			nvKoe += 2;
+		} else if (SJANSE_BOBIL <= terning && terning < SJANSE_BUSS) { //BUSS
+			kjoretoyet = new Kjoretoy("Buss", 4);
+			kjoretoykoe.insert(1, kjoretoyet);
+			nvKoe += 4;
+		} else { 													//LASTEBIL
+			int tall = (int)(Math.random()*6) + 3;
+			kjoretoyet = new Kjoretoy("Lastebil", tall);
+			kjoretoykoe.insert(1, kjoretoyet);
+			nvKoe += tall;
+		}
+		kjoretoyet.skrivUtTilkonsoll();
+		System.out.printf(" Tid: %-6d Kølengde: %d\n", nvTid, nvKoe);
+		
+		Hendelse nesteHendelse = new Hendelse(nvTid + TID_MELLOM_KJORETOY, Hendelsestype.KJORETOY_KOMMER);
+		hendelseskoe.insert(nesteHendelse.tidspunkt, nesteHendelse);
+		
+	
+		
+	}
+	
+	private void haandterFerjeKommer(int nvTid) {
+		System.out.println(kjoretoykoe.toString());
+		if(nvKoe > maksKoe) maksKoe = nvKoe;
+		System.out.println("\tFerje ankommer! Tid: " + nvTid + " Maks kølengde: " + maksKoe);
+		int teller = 0;
+		
+		
+		while (!(kjoretoykoe.isEmpty())) {
+			Kjoretoy kjoretoyet = kjoretoykoe.findMin();
+			if ((teller + kjoretoyet.storrelse) > KAPASITET_FERJE) break;
+			
+			kjoretoyet = kjoretoykoe.removeMin();
+			teller += kjoretoyet.storrelse;
+			nvKoe -= kjoretoyet.storrelse;
+			kjoretoyet.skrivUtTilkonsoll();
+			System.out.println(" lastes ombord. Kølengde: " + nvKoe);
+			
+			/*
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				return;
+			}
+			*/
+			
+		}
+		
+		System.out.println("\tFerja kaster loss!\n\tAntall kjøretøyplasser på ferja: " + teller);
+		Hendelse nesteHendelse = new Hendelse(nvTid + TID_MELLOM_FERJER, Hendelsestype.FERJE_KOMMER);
+		hendelseskoe.insert(nesteHendelse.tidspunkt, nesteHendelse);
+	}
+	
+	public static void main (String [] args) {
+		FergeleieMedPrioritet simulator = new FergeleieMedPrioritet();
+		while (true) {
+			simulator.behandleNesteHendelse();
+			
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				return;
+			}
+			
+		}
+	}
+	
+}
