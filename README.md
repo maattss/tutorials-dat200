@@ -1,1 +1,2 @@
-# DAT200
+# Data structures and algorithms
+My tutorial solutions
