@@ -1,3 +1,5 @@
+//Norwegian language
+
 public class Fergeleie {
 
 	public static enum Kjoretoytype {BIL, BOBIL, BUSS, LASTEBIL};
