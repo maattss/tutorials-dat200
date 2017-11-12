@@ -1,0 +1,240 @@
+package github;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+
+public class MapReader {
+	private int columnsTotal;
+	private int rowsTotal;
+	
+	private int columnPlayer;
+	private int rowPlayer;
+	private int indexPlayer;
+	
+	private int columnTreasure;
+	private int rowTreasure;
+	private int indexTreasure;
+
+	
+	private AdjacencyListMap<Integer> graphWithoutBoat;
+	private AdjacencyListMap<Integer> graphWithBoat;
+	
+	private void addEdgesWithBoat() {
+		int noNodes = graphWithBoat.noNodes();
+		
+		for(int index = 0; index < noNodes; index++) {
+			int column = graphWithBoat.getColumn(index);
+			int row = graphWithBoat.getRow(index);
+			int distance;
+			
+			if(column > 0) {
+				// Add left edge
+				if(graphWithBoat.isWater(index - 1)) {
+					distance = 1;
+				} else {
+					distance = 2;
+				}
+				
+				distance += Math.abs(graphWithBoat.getHeight(index) - graphWithBoat.getHeight(index - 1));
+				graphWithBoat.addEdge(index, index - 1, distance);
+			}
+			if (column < columnsTotal - 1) {
+				// Add right edge
+				if(graphWithBoat.isWater(index + 1)) {
+					distance = 1;
+				} else {
+					distance = 2;	
+				}
+				
+				distance += Math.abs(graphWithBoat.getHeight(index) - graphWithBoat.getHeight(index + 1));
+				graphWithBoat.addEdge(index, index + 1, distance);
+				
+			}
+			
+			if (row > 0) {
+				// Add up edge
+				if(graphWithBoat.isWater(index - columnsTotal)) {
+					distance = 1;
+				} else {
+					distance = 2;	
+				}
+				
+				distance +=  Math.abs(graphWithBoat.getHeight(index) - graphWithBoat.getHeight(index - columnsTotal));
+				graphWithBoat.addEdge(index, index - columnsTotal, distance);
+			}
+			
+			if (row < rowsTotal - 1) {
+				// Add down edge
+				if(graphWithBoat.isWater(index + columnsTotal)) {
+					distance = 1;
+				} else {
+					distance = 2;	
+				}
+				
+				distance +=  Math.abs(graphWithBoat.getHeight(index) - graphWithBoat.getHeight(index + columnsTotal));
+				graphWithBoat.addEdge(index, index + columnsTotal, distance);
+			}
+		}
+		//System.out.println(graphWithBoat);
+	}
+	
+	private void addEdgesWithoutBoat() {
+		int noNodes = graphWithoutBoat.noNodes();
+		
+		for(int index = 0; index < noNodes; index++) {
+			int column = graphWithoutBoat.getColumn(index);
+			int row = graphWithoutBoat.getRow(index);
+			
+			if(!(graphWithoutBoat.isWater(index))) { // If water => No edges
+			
+				if(column > 0) {
+				// Add left edge
+					graphWithoutBoat.addEdge(index, index - 1,
+							1 + Math.abs(graphWithoutBoat.getHeight(index) - graphWithoutBoat.getHeight(index - 1)));
+				}
+			
+				if (column < columnsTotal - 1) {
+				// Add right edge
+				graphWithoutBoat.addEdge(index, index + 1,
+						1 + Math.abs(graphWithoutBoat.getHeight(index) - graphWithoutBoat.getHeight(index + 1))); 			
+				}
+			
+				if (row > 0) {
+				// Add up edge
+				graphWithoutBoat.addEdge(index, index - columnsTotal,
+						1 + Math.abs(graphWithoutBoat.getHeight(index) - graphWithoutBoat.getHeight(index - columnsTotal)));
+				}
+			
+				if (row < rowsTotal - 1) {
+				// Add down edge
+				graphWithoutBoat.addEdge(index, index + columnsTotal,
+						1 + Math.abs(graphWithoutBoat.getHeight(index) - graphWithoutBoat.getHeight(index + columnsTotal)));
+				}
+			}
+		}
+		//System.out.println(graphWithoutBoat);
+	}
+	
+	public void addEdges() {
+		addEdgesWithBoat();
+		addEdgesWithoutBoat();
+	}
+	
+
+	public void readMap() {
+		graphWithoutBoat = new AdjacencyListMap<>();
+		graphWithBoat = new AdjacencyListMap<>();
+		
+		try(Scanner mapreader = new Scanner(new File("mapWithLake.txt"))) {
+			String line;
+			columnsTotal = mapreader.nextInt();
+			//System.out.println("Columns in total: "+ columnsTotal);
+			rowsTotal = mapreader.nextInt();
+			//System.out.println("Rows in total: "+ rowsTotal);
+			columnPlayer = mapreader.nextInt();
+			rowPlayer = mapreader.nextInt();
+			indexPlayer = rowPlayer*columnsTotal + columnPlayer;
+			System.out.println("Position player: ["+ columnPlayer
+					+ ", " + rowPlayer + "]. Index: " + indexPlayer);
+		
+			columnTreasure = mapreader.nextInt();
+			rowTreasure = mapreader.nextInt();
+			indexTreasure = rowTreasure*columnsTotal + columnTreasure;
+			System.out.println("Position treasure: ["+ columnTreasure
+					+ ", " + rowTreasure + "]. Index: " + indexTreasure);
+			
+			int rowCounter = 0;
+			int columnCounter = 0;
+			int indexCounter = 0;
+			System.out.println("\nMap:");
+			
+			while(mapreader.hasNext()) {	
+				line = mapreader.next();
+				String [] parts = line.split(",");
+				
+				for(columnCounter = 0; columnCounter < parts.length; columnCounter++) {
+					String s = parts[columnCounter];
+					System.out.printf("%3s", s);
+					int hoyde = -1;
+					boolean water = false;
+
+					if(s.endsWith("V")) {
+						water = true;
+					}
+		
+					try {
+						hoyde = Integer.parseInt(s.substring(0,1));
+					} catch (NumberFormatException e) {
+						System.err.print("Something went wrong when reading the map!");
+					}
+				
+					graphWithoutBoat.addNode(indexCounter, columnCounter, rowCounter, hoyde, water);	
+					graphWithBoat.addNode(indexCounter, columnCounter, rowCounter, hoyde, water);	
+					indexCounter++;
+				}
+				System.out.println();
+				rowCounter++;
+			}
+			System.out.println();
+			
+		} catch (FileNotFoundException e) {
+			System.err.println("Something went wrong in finding the file!");
+		}
+	}
+	
+	public int getColumnsTotal() {
+		return columnsTotal;
+	}
+
+
+	public int getRowsTotal() {
+		return rowsTotal;
+	}
+
+
+	public int getColumnPlayer() {
+		return columnPlayer;
+	}
+
+
+	public int getRowPlayer() {
+		return rowPlayer;
+	}
+
+
+	public int getIndexPlayer() {
+		return indexPlayer;
+	}
+
+
+	public int getColumnTreasure() {
+		return columnTreasure;
+	}
+
+
+	public int getRowTreasure() {
+		return rowTreasure;
+	}
+
+
+	public int getIndexTreasure() {
+		return indexTreasure;
+	}
+
+
+	public AdjacencyListMap<Integer> getGraphWithoutBoat() {
+		return graphWithoutBoat;
+	}
+	
+	public AdjacencyListMap<Integer> getGraphWithBoat() {
+		return graphWithBoat;
+	}
+
+	public static void main(String[] args) {
+		MapReader testReader = new MapReader();
+		testReader.readMap();
+		testReader.addEdges();
+		//System.out.println(testReader.graphWithoutBoat);
+	}
+}
