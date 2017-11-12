@@ -1,0 +1,70 @@
+package lake;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Dijkstra <T> {
+	private MinHeap<Integer> priorityMinQueue;
+	private Graph<T> graph;			// Grafen som skal behandles
+	private int startNodeIndex;
+	private int targetNodeIndex;
+	
+	private ArrayList<Integer> previousIndex;
+	
+	public Dijkstra(Graph<T> graph, int startNodeIndex, int targetNodeIndex) {
+		this.graph = graph;
+		this.startNodeIndex = startNodeIndex;
+		this.targetNodeIndex = targetNodeIndex;		
+		graph.resetHeights();
+		graph.setHeight(startNodeIndex, 0);
+		priorityMinQueue = new MinHeap<>();
+		priorityMinQueue.insert(0, startNodeIndex);
+		previousIndex = new ArrayList<>();
+		for (int i=0;i<graph.noNodes();i++) {
+			previousIndex.add(Graph.NO_SCORE);
+		}
+	}
+	
+	public void runDijkstra() {
+		int nodeIndex;
+		int newCost;
+		
+		while (!priorityMinQueue.isEmpty()) {
+			nodeIndex = priorityMinQueue.removeMin();
+			if (nodeIndex == targetNodeIndex) break;		
+			if (graph.isHandled(nodeIndex)) continue;	
+			graph.setHandled(nodeIndex, true);
+			
+			List<Integer> neighbours = graph.getNeighbours(nodeIndex);
+			
+			for (int index: neighbours) {
+				newCost = graph.getHeight(nodeIndex) + graph.getDistance(nodeIndex, index);
+				if (graph.getHeight(index) == Graph.NO_SCORE) {
+					graph.setHeight(index, newCost);
+					priorityMinQueue.insert(newCost, index);
+					previousIndex.set(index, nodeIndex);
+				} else {
+					if (graph.getHeight(index) > newCost) {
+						graph.setHeight(index, newCost);
+						priorityMinQueue.insert(newCost, index);
+						previousIndex.set(index, nodeIndex);
+					}
+				}
+			}
+		}
+	}
+	
+	
+	public List<Integer> getShortestPath() {
+		ArrayList<Integer> oppositePath = new ArrayList<>();
+		int currentNode = targetNodeIndex;
+	
+		while (currentNode != Graph.NO_SCORE) { 
+			oppositePath.add(currentNode);
+			currentNode = previousIndex.get(currentNode);
+		}
+		Collections.reverse(oppositePath);
+		return oppositePath;
+	}
+}
