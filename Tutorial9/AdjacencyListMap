@@ -1,0 +1,136 @@
+package lake;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+/* 
+ * Memory allocation: O(V + E)
+ */
+public class AdjacencyListMap <T> implements Graph<T>{
+	private ArrayList<Node> nodes;
+	  
+	
+	private class Node {
+		int column;
+		int row;
+		int index;
+		int height;
+		boolean handled;
+		boolean water;
+		List<Edge> egdeList;
+	}
+	
+	private class Edge {
+		int distance;
+		Node toNode;
+		int toNodeIndex;
+		
+		public Edge(Node toNode, int toNodeIndex, int distance) {
+			this.toNode = toNode;
+			this.toNodeIndex = toNodeIndex;
+			this.distance = distance;
+		}
+	}
+	
+	public static final int NO_EDGE = -1;
+	
+	public AdjacencyListMap() {
+		nodes = new ArrayList<>();
+	}
+	
+	public void addNode(int index, int column, int row, int height, boolean water) {
+		Node newNode = new Node();
+		newNode.column = column;
+		newNode.row = row;
+		newNode.height = height;
+		newNode.index = index;
+		newNode.handled = false;
+		newNode.water = water;
+		newNode.egdeList = new ArrayList<>();
+		nodes.add(newNode);
+	}
+
+	public void addEdge(int fromIndex, int toIndex, int distance) {
+		Node fromNode = nodes.get(fromIndex);
+		Node toNode = nodes.get(toIndex);
+		fromNode.egdeList.add(new Edge(toNode, toIndex, distance));
+	}
+	
+	public boolean isWater(int index) {
+		return nodes.get(index).water;
+	}
+
+	public int getDistance(int fromIndex, int toIndex) {
+		Node fromNode = nodes.get(fromIndex);
+		Node toNode = nodes.get(toIndex);
+		for (Edge e: fromNode.egdeList) {
+			if (e.toNode == toNode) {
+				return e.distance;
+			}
+		}
+		return NO_EDGE;
+	}
+	
+	public List<Integer> getNeighbours(int nodeIndex) {
+		Node fromNode = nodes.get(nodeIndex);
+		List<Integer> listOfNeighbours = new ArrayList<>();
+		for (Edge e: fromNode.egdeList) {
+			listOfNeighbours.add(e.toNodeIndex);
+		}
+		return listOfNeighbours;
+	}
+
+	public int getHeight(int nodeIndex) {
+		return nodes.get(nodeIndex).height;
+	}
+
+	public int setHeight(int nodeIndex, int newHeight) {
+		return nodes.get(nodeIndex).height = newHeight;
+	}
+	
+	public void resetHeights() {
+		for(Node node: nodes) {
+			node.height = NO_SCORE;
+			node.handled = false;
+		}
+	}
+	
+	public int getColumn(int index) {
+		return nodes.get(index).column;
+	}
+	
+	public int getRow(int index) {
+		return nodes.get(index).row;
+	}
+	
+	
+	public boolean isHandled(int nodeIndex) {
+		return nodes.get(nodeIndex).handled;
+	}
+
+	public void setHandled(int nodeIndex, boolean handled) {
+		nodes.get(nodeIndex).handled = handled;
+	}
+
+	public int noNodes() {
+		return nodes.size();
+	}
+	
+	
+	@Override 
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		for (Node n: nodes) {
+			result.append("\nNode index: " + n.index + "\n");
+			result.append(" Height: " + n.height + "\n");
+			result.append(" Edges: " + n.egdeList.size() + "\n");
+			result.append(" Water: " + n.water + "\n");
+			for (Edge e: n.egdeList) {
+				result.append("  <--> " + e.toNode.index + 
+						", with distance: " + e.distance + "\n");
+			}
+		}
+		return result.toString();
+	}
+}
