@@ -1,0 +1,25 @@
+import java.util.List;
+
+public interface Graph <T> {
+	public static final int NO_EDGE = -1;
+	public static final int NO_SCORE = -1;
+	
+	public void addNode(int index, int column, int row, int height, boolean water);
+	public void addEdge(int fromIndex, int toIndex, int distance);
+	
+	public int getDistance(int fromIndex, int toIndex);
+	
+	public List<Integer> getNeighbours(int nodeIndex);
+	
+	public int getHeight(int nodeIndex);
+	public int setHeight(int nodeIndex, int newHeight);
+	public void resetHeights();
+	
+	public int getColumn(int index);
+	public int getRow(int index);
+	
+	public boolean isHandled(int nodeIndex);
+	public void setHandled(int nodeIndex, boolean handled);
+	
+	public int noNodes();
+}
