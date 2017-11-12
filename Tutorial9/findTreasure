@@ -1,0 +1,95 @@
+import java.util.List;
+
+public class FindTreasure {
+	private int playerIndex;
+	
+	private int treasureIndex;
+	
+	private Graph<Integer> graphWithoutBoat;
+	private Graph<Integer> graphWithBoat;
+	private Dijkstra<Integer> dijkstra;
+	private boolean boat;
+	
+	private int totalDistanceWithBoat;
+	private int totalDistanceWithoutBoat;
+	
+	public FindTreasure() {
+		MapReader reader = new MapReader();
+		reader.readMap();
+		reader.addEdges();
+		
+		playerIndex = reader.getIndexPlayer();
+		treasureIndex = reader.getIndexTreasure();
+		graphWithoutBoat = reader.getGraphWithoutBoat();
+		graphWithBoat = reader.getGraphWithBoat();
+	}
+	
+	public List<Integer> findShortestPath() {
+		totalDistanceWithBoat = 0;
+		totalDistanceWithoutBoat = 0;
+		
+		dijkstra = new Dijkstra<>(graphWithoutBoat, playerIndex, treasureIndex);
+		dijkstra.runDijkstra();
+		List<Integer> spWithoutBoat = dijkstra.getShortestPath();
+		
+		for(int i = 0; i < spWithoutBoat.size(); i++) {
+			if(i != spWithoutBoat.size() - 1) {
+				totalDistanceWithoutBoat += graphWithoutBoat.getDistance(spWithoutBoat.get(i),spWithoutBoat.get(i + 1));
+			} 
+	
+		}
+		
+		
+		dijkstra = new Dijkstra<>(graphWithBoat, playerIndex, treasureIndex);
+		dijkstra.runDijkstra();
+		List<Integer> spWithBoat = dijkstra.getShortestPath();
+	
+		for(int i = 0; i < spWithBoat.size(); i++) {
+			if(i != spWithBoat.size() - 1) {
+				totalDistanceWithBoat += 
+						graphWithBoat.getDistance(spWithBoat.get(i), spWithBoat.get(i + 1));
+			}
+		}
+		
+		if(spWithBoat.size() < spWithoutBoat.size()) {
+			boat = true;
+			return spWithBoat;
+		} else {
+			boat = false;
+			return spWithoutBoat;
+		}
+	}
+	
+	public static void main(String[] args) {
+		FindTreasure program = new FindTreasure();
+		List<Integer> shortestPath = program.findShortestPath();
+		
+		int totalCost = 0;
+		int currentNodeIndex = 0;
+		
+		System.out.print("The fastest route for the player is ");
+		if(program.boat) {
+			System.out.println("WITH boat and via this path: ");
+			totalCost = program.totalDistanceWithBoat;
+		} else {
+			System.out.println("WITHOUT boat and via this path: ");
+			totalCost = program.totalDistanceWithoutBoat;
+		}
+	
+		
+		for(int i = 0; i < shortestPath.size(); i++) {
+			currentNodeIndex = shortestPath.get(i);
+			if (currentNodeIndex == program.playerIndex) {
+				System.out.print("(Start) " + currentNodeIndex + " --> ");
+			} else if (currentNodeIndex == program.treasureIndex) {
+				System.out.print(currentNodeIndex + " (target)\n");
+				break;
+			} else {
+				System.out.print(currentNodeIndex+ " --> ");
+			}
+		}
+		System.out.println("Total cost: " + totalCost);
+		
+	}
+	
+}
