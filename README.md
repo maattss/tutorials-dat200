@@ -1,4 +1,4 @@
 # Data structures and algorithms
-My tutorial solutions
+Tutorial solutions
 
 -- maattss
