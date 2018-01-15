@@ -1,4 +1,4 @@
 # tutorials-dat200
-Tutorial solutions
+My solutions for data structures and algorithms tutorials
 
 -- maattss
