@@ -1,4 +1,4 @@
-# Data structures and algorithms
+# tutorials-dat200
 Tutorial solutions
 
 -- maattss
