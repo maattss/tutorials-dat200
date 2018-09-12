@@ -1,0 +1,12 @@
+1	Nilsen	Arne	1997	Data	1
+2	Tomassen	Birgit	1997	Data	1
+3	Ås	Nils	1997	Elektro	1
+4	Berg	Hanne	1996	Elektro	1
+5	Etterstad	Tom	1996	Data	2
+6	Hansen	Brage	1995	Data	2
+7	Henriksen	Frank	1995	Elektro	2
+8	Olsen	Hilde	1995	Data	2
+9	Berg	Erling	1993	Data	3
+10	Godalen	Arne	1993	Elektro	3
+11	Erlingsen	Stine	1993	Data	3
+12	Salheim	Bjørn	1993	Data	3

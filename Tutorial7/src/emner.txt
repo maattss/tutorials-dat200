@@ -1,0 +1,9 @@
+DAT100	Objektorientert Programmering	V	10	
+ING100	Ingeniørfaglig Innføringsemne	H	10	
+MAT100	Matematikk 1	H	10	
+FYS100	Fysikk	H	10	
+DAT200	Algoritmer og Datastrukturer	H	10	
+ELE210	Datamaskinarkitektur	H	10	
+DAT230	Kommunikasjonsteknologi 1	V	10	
+ELE100	Elektroteknikk 1	V	10	
+STA100	Statistikk 1	V	10	
