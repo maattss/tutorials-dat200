@@ -1,4 +1,4 @@
-# tutorials-dat200
-My solutions for data structures and algorithms tutorials
+# Tutorials DAT200
+My solutions for tutorials in the data structures and algorithms course
 
 Note: Most code comments are written in norwegian
